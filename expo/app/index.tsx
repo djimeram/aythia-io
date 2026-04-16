@@ -1,31 +1,57 @@
-import React, { useRef, useCallback } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import React, { useRef, useCallback, useMemo } from 'react';
+import { ScrollView, StyleSheet, View, Animated } from 'react-native';
 import HeroSection from '@/components/HeroSection';
 import FeaturesSection from '@/components/FeaturesSection';
 import RideFlowSection from '@/components/RideFlowSection';
 import TestimonialsSection from '@/components/TestimonialsSection';
 import DownloadSection from '@/components/DownloadSection';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
+import Navbar from '@/components/Navbar';
 
 export default function AythiaShowcasePage() {
-  const ref = useRef<ScrollView>(null);
-  const fy = useRef(0);
-  const go = useCallback(() => ref.current?.scrollTo({ y: fy.current, animated: true }), []);
+  const scrollRef = useRef<ScrollView>(null);
+  const featuresY = useRef(0);
+  const scrollY = useMemo(() => new Animated.Value(0), []);
+
+  const scrollToFeatures = useCallback(() => {
+    scrollRef.current?.scrollTo({ y: featuresY.current, animated: true });
+  }, []);
 
   return (
-    <View style={p.r}>
-      <LanguageSwitcher />
-      <ScrollView ref={ref} style={p.s} contentContainerStyle={p.c} showsVerticalScrollIndicator={false} scrollEventThrottle={16} bounces>
-        <HeroSection onScrollToFeatures={go} />
-        <View onLayout={e => { fy.current = e.nativeEvent.layout.y; }}>
+    <View style={styles.root}>
+      <Navbar scrollY={scrollY} onNavigate={() => {}} />
+      <Animated.ScrollView
+        ref={scrollRef}
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        bounces
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+      >
+        <HeroSection onScrollToFeatures={scrollToFeatures} />
+        <View onLayout={e => { featuresY.current = e.nativeEvent.layout.y; }}>
           <FeaturesSection />
         </View>
         <RideFlowSection />
         <TestimonialsSection />
         <DownloadSection />
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 }
 
-const p = StyleSheet.create({ r: { flex: 1, backgroundColor: '#F7F5F2' }, s: { flex: 1 }, c: { flexGrow: 1 } });
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: '#FAFAF9',
+  },
+  scroll: {
+    flex: 1,
+  },
+  content: {
+    flexGrow: 1,
+  },
+});

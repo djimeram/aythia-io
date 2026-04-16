@@ -4,8 +4,12 @@ import { Star, Quote } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const CARD_COLORS = ['#FFF7ED', '#F0FDF4', '#EFF6FF', '#FDF4FF'] as const;
-const QUOTE_COLORS = ['#E8692E', '#1B9E8C', '#6366F1', '#EC4899'] as const;
+const THEMES = [
+  { bg: '#FFFFFF', accent: '#EA580C', quoteBg: '#FFF7ED', avatarBg: '#FFEDD5' },
+  { bg: '#FFFFFF', accent: '#0D9488', quoteBg: '#F0FDFA', avatarBg: '#CCFBF1' },
+  { bg: '#FFFFFF', accent: '#6366F1', quoteBg: '#EEF2FF', avatarBg: '#E0E7FF' },
+  { bg: '#FFFFFF', accent: '#E11D48', quoteBg: '#FFF1F2', avatarBg: '#FFE4E6' },
+] as const;
 
 export default function TestimonialsSection() {
   const { width } = useWindowDimensions();
@@ -22,18 +26,20 @@ export default function TestimonialsSection() {
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeIn, { toValue: 1, duration: 700, useNativeDriver: true }),
-      Animated.spring(slideUp, { toValue: 0, tension: 40, friction: 8, useNativeDriver: true }),
+      Animated.timing(fadeIn, { toValue: 1, duration: 600, useNativeDriver: true }),
+      Animated.spring(slideUp, { toValue: 0, tension: 40, friction: 9, useNativeDriver: true }),
     ]).start();
   }, [fadeIn, slideUp]);
 
-  const cardW = Math.min(width * 0.8, 310);
+  const cardW = Math.min(width * 0.82, 320);
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeIn, transform: [{ translateY: slideUp }] }]}>
+      <View style={styles.topLine} />
+
       <View style={[styles.header, isRTL && { alignItems: 'flex-end' as const }]}>
-        <View style={[styles.eyebrowWrap, isRTL && { alignSelf: 'flex-end' as const }]}>
-          <View style={styles.eyebrowLine} />
+        <View style={[styles.eyebrowRow, isRTL && { alignSelf: 'flex-end' as const, flexDirection: 'row-reverse' as const }]}>
+          <View style={styles.eyebrowDot} />
           <Text style={[styles.eyebrow, { writingDirection }]}>{t.testimonials.eyebrow}</Text>
         </View>
         <Text style={[styles.heading, { textAlign, writingDirection }]}>{t.testimonials.heading}</Text>
@@ -46,31 +52,48 @@ export default function TestimonialsSection() {
         decelerationRate="fast"
         snapToInterval={cardW + 14}
       >
-        {testimonials.map((item, i) => (
-          <View key={i} style={[styles.card, { width: cardW, backgroundColor: CARD_COLORS[i % CARD_COLORS.length] }]}>
-            <View style={[styles.quoteIconWrap, { backgroundColor: QUOTE_COLORS[i % QUOTE_COLORS.length] + '15' }]}>
-              <Quote size={16} color={QUOTE_COLORS[i % QUOTE_COLORS.length]} strokeWidth={2.5} />
-            </View>
-
-            <Text style={[styles.quoteText, { textAlign, writingDirection }]}>{item.text}</Text>
-
-            <View style={[styles.starsRow, { flexDirection }]}>
-              {Array.from({ length: item.stars }).map((_, si) => (
-                <Star key={si} size={14} color="#F59E0B" fill="#F59E0B" />
-              ))}
-            </View>
-
-            <View style={[styles.author, { flexDirection }]}>
-              <View style={[styles.avatar, { backgroundColor: QUOTE_COLORS[i % QUOTE_COLORS.length] + '18' }]}>
-                <Text style={[styles.avatarText, { color: QUOTE_COLORS[i % QUOTE_COLORS.length] }]}>{item.name[0]}</Text>
+        {testimonials.map((item, i) => {
+          const th = THEMES[i % THEMES.length];
+          return (
+            <View
+              key={i}
+              style={[
+                styles.card,
+                {
+                  width: cardW,
+                  backgroundColor: th.bg,
+                },
+              ]}
+            >
+              <View style={[styles.cardTop, { backgroundColor: th.quoteBg }]}>
+                <View style={[styles.quoteIcon, { backgroundColor: th.accent + '15' }]}>
+                  <Quote size={15} color={th.accent} strokeWidth={2.5} />
+                </View>
+                <Text style={[styles.quoteText, { textAlign, writingDirection }]}>{item.text}</Text>
               </View>
-              <View style={isRTL ? { alignItems: 'flex-end' as const } : undefined}>
-                <Text style={[styles.authorName, { textAlign, writingDirection }]}>{item.name}</Text>
-                <Text style={[styles.authorLoc, { textAlign, writingDirection }]}>{item.location}</Text>
+
+              <View style={styles.cardBottom}>
+                <View style={[styles.starsRow, { flexDirection }]}>
+                  {Array.from({ length: item.stars }).map((_, si) => (
+                    <Star key={si} size={13} color="#F59E0B" fill="#F59E0B" />
+                  ))}
+                </View>
+
+                <View style={[styles.authorRow, { flexDirection }]}>
+                  <View style={[styles.avatar, { backgroundColor: th.avatarBg }]}>
+                    <Text style={[styles.avatarLetter, { color: th.accent }]}>{item.name[0]}</Text>
+                  </View>
+                  <View style={isRTL ? { alignItems: 'flex-end' as const } : undefined}>
+                    <Text style={[styles.authorName, { textAlign, writingDirection }]}>{item.name}</Text>
+                    <Text style={[styles.authorLoc, { textAlign, writingDirection }]}>{item.location}</Text>
+                  </View>
+                </View>
               </View>
+
+              <View style={[styles.cardAccent, { backgroundColor: th.accent }]} />
             </View>
-          </View>
-        ))}
+          );
+        })}
       </ScrollView>
     </Animated.View>
   );
@@ -78,26 +101,32 @@ export default function TestimonialsSection() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 64,
-    paddingBottom: 24,
+    paddingTop: 48,
+    paddingBottom: 32,
     backgroundColor: Colors.background,
+  },
+  topLine: {
+    height: 1,
+    backgroundColor: 'rgba(0,0,0,0.04)',
+    marginHorizontal: 24,
+    marginBottom: 48,
   },
   header: {
     paddingHorizontal: 24,
     marginBottom: 28,
   },
-  eyebrowWrap: {
+  eyebrowRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     alignSelf: 'flex-start' as const,
-    gap: 10,
+    gap: 8,
     marginBottom: 14,
   },
-  eyebrowLine: {
-    width: 24,
-    height: 2,
+  eyebrowDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: '#6366F1',
-    borderRadius: 1,
   },
   eyebrow: {
     fontSize: 11,
@@ -118,48 +147,58 @@ const styles = StyleSheet.create({
     paddingRight: 48,
   },
   card: {
-    borderRadius: 24,
-    padding: 24,
+    borderRadius: 22,
+    overflow: 'hidden' as const,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 20,
+    elevation: 4,
     borderWidth: 1,
-    borderColor: 'rgba(28,25,23,0.04)',
+    borderColor: 'rgba(0,0,0,0.04)',
+    position: 'relative' as const,
   },
-  quoteIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
+  cardTop: {
+    padding: 22,
+    paddingBottom: 18,
+  },
+  quoteIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   quoteText: {
     fontSize: 15,
     color: Colors.text,
     lineHeight: 24,
-    marginBottom: 16,
     fontWeight: '500' as const,
+  },
+  cardBottom: {
+    padding: 22,
+    paddingTop: 14,
   },
   starsRow: {
     flexDirection: 'row' as const,
     gap: 3,
-    marginBottom: 18,
+    marginBottom: 14,
   },
-  author: {
+  authorRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     gap: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(28,25,23,0.06)',
-    paddingTop: 16,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 14,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
-  avatarText: {
-    fontSize: 16,
+  avatarLetter: {
+    fontSize: 17,
     fontWeight: '800' as const,
   },
   authorName: {
@@ -170,6 +209,13 @@ const styles = StyleSheet.create({
   authorLoc: {
     fontSize: 12,
     color: Colors.textMuted,
-    marginTop: 1,
+    marginTop: 2,
+  },
+  cardAccent: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 3,
   },
 });

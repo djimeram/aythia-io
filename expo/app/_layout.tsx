@@ -9,7 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 
 SplashScreen.preventAutoHideAsync();
 
-const BG = '#F7F5F2';
+const BG = '#FAFAF9';
 
 function RootLayoutNav() {
   return (

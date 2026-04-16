@@ -6,51 +6,70 @@ import {
   Animated,
   Pressable,
   Linking,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Apple, Play, Heart, ArrowUpRight } from 'lucide-react-native';
+import { Apple, Play, Heart, ArrowUpRight, Sparkles } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function DownloadSection() {
   const { t, isRTL, textAlign, writingDirection, flexDirection } = useLanguage();
   const fadeIn = useRef(new Animated.Value(0)).current;
-  const scaleBtn = useRef(new Animated.Value(0.95)).current;
-  const glowAnim = useRef(new Animated.Value(0.4)).current;
+  const scaleCard = useRef(new Animated.Value(0.96)).current;
+  const shimmer = useRef(new Animated.Value(0)).current;
+  const floatY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.timing(fadeIn, { toValue: 1, duration: 700, useNativeDriver: true }).start();
-    Animated.spring(scaleBtn, { toValue: 1, tension: 40, friction: 8, useNativeDriver: true }).start();
+    Animated.parallel([
+      Animated.timing(fadeIn, { toValue: 1, duration: 700, useNativeDriver: true }),
+      Animated.spring(scaleCard, { toValue: 1, tension: 40, friction: 8, useNativeDriver: true }),
+    ]).start();
 
     Animated.loop(
       Animated.sequence([
-        Animated.timing(glowAnim, { toValue: 0.8, duration: 2500, useNativeDriver: true }),
-        Animated.timing(glowAnim, { toValue: 0.4, duration: 2500, useNativeDriver: true }),
+        Animated.timing(shimmer, { toValue: 1, duration: 3000, useNativeDriver: true }),
+        Animated.timing(shimmer, { toValue: 0, duration: 3000, useNativeDriver: true }),
       ])
     ).start();
-  }, [fadeIn, scaleBtn, glowAnim]);
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatY, { toValue: -6, duration: 2000, useNativeDriver: true }),
+        Animated.timing(floatY, { toValue: 6, duration: 2000, useNativeDriver: true }),
+      ])
+    ).start();
+  }, [fadeIn, scaleCard, shimmer, floatY]);
 
   const handleStore = () => {
     Linking.openURL('https://rork.com/p/h5yitrrxv4e3qreqccuca');
   };
 
+  const shimmerOpacity = shimmer.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0.04, 0.12, 0.04],
+  });
+
   return (
     <Animated.View style={[styles.container, { opacity: fadeIn }]}>
-      <Animated.View style={[styles.glowOrb1, { opacity: glowAnim }]} />
-      <Animated.View style={[styles.glowOrb2, { opacity: glowAnim }]} />
-
-      <View style={styles.ctaCard}>
+      <Animated.View style={[styles.ctaCard, { transform: [{ scale: scaleCard }] }]}>
         <LinearGradient
-          colors={['#E8692E', '#C9541E']}
+          colors={['#EA580C', '#C2410C', '#9A3412']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFillObject}
         />
 
-        <View style={styles.ctaCardPattern1} />
-        <View style={styles.ctaCardPattern2} />
+        <Animated.View style={[styles.shimmerOrb, { opacity: shimmerOpacity, transform: [{ translateY: floatY }] }]} />
+        <View style={styles.patternCircle1} />
+        <View style={styles.patternCircle2} />
+        <View style={styles.patternCircle3} />
 
-        <View style={styles.ctaContent}>
+        <View style={styles.ctaInner}>
+          <View style={styles.sparkleWrap}>
+            <Sparkles size={20} color="rgba(255,255,255,0.6)" strokeWidth={2} />
+          </View>
+
           <Text style={[styles.heading, { textAlign: 'center' as const, writingDirection }]}>
             {t.download.heading}{'\n'}
             <Text style={styles.headingAccent}>{t.download.headingAccent}</Text>
@@ -60,48 +79,52 @@ export default function DownloadSection() {
             {t.download.subtext}
           </Text>
 
-          <Animated.View style={[styles.buttonsWrap, { transform: [{ scale: scaleBtn }] }]}>
+          <View style={styles.buttonsCol}>
             <Pressable
-              style={({ pressed }) => [styles.storeBtn, pressed && styles.btnPressed]}
+              style={({ pressed }) => [styles.storeBtn, pressed && styles.btnPress]}
               onPress={handleStore}
             >
-              <View style={[styles.storeBtnInner, { flexDirection }]}>
-                <Apple size={22} color="#1C1917" strokeWidth={2} />
-                <View style={isRTL ? { alignItems: 'flex-end' as const } : undefined}>
-                  <Text style={[styles.storeBtnSub, { writingDirection }]}>{t.download.downloadOn}</Text>
-                  <Text style={[styles.storeBtnMain, { writingDirection }]}>{t.download.appStore}</Text>
+              <View style={[styles.storeBtnRow, { flexDirection }]}>
+                <View style={styles.storeIconWrap}>
+                  <Apple size={22} color={Colors.text} strokeWidth={2} />
                 </View>
-                <View style={styles.btnArrow}>
-                  <ArrowUpRight size={14} color={Colors.primary} strokeWidth={2.5} />
+                <View style={isRTL ? { alignItems: 'flex-end' as const } : undefined}>
+                  <Text style={[styles.storeSub, { writingDirection }]}>{t.download.downloadOn}</Text>
+                  <Text style={[styles.storeMain, { writingDirection }]}>{t.download.appStore}</Text>
+                </View>
+                <View style={styles.arrowCircle}>
+                  <ArrowUpRight size={13} color={Colors.primary} strokeWidth={2.5} />
                 </View>
               </View>
             </Pressable>
 
             <Pressable
-              style={({ pressed }) => [styles.storeBtn, pressed && styles.btnPressed]}
+              style={({ pressed }) => [styles.storeBtn, pressed && styles.btnPress]}
               onPress={handleStore}
             >
-              <View style={[styles.storeBtnInner, { flexDirection }]}>
-                <Play size={22} color="#1C1917" strokeWidth={2} />
-                <View style={isRTL ? { alignItems: 'flex-end' as const } : undefined}>
-                  <Text style={[styles.storeBtnSub, { writingDirection }]}>{t.download.getItOn}</Text>
-                  <Text style={[styles.storeBtnMain, { writingDirection }]}>{t.download.googlePlay}</Text>
+              <View style={[styles.storeBtnRow, { flexDirection }]}>
+                <View style={styles.storeIconWrap}>
+                  <Play size={22} color={Colors.text} strokeWidth={2} />
                 </View>
-                <View style={styles.btnArrow}>
-                  <ArrowUpRight size={14} color={Colors.primary} strokeWidth={2.5} />
+                <View style={isRTL ? { alignItems: 'flex-end' as const } : undefined}>
+                  <Text style={[styles.storeSub, { writingDirection }]}>{t.download.getItOn}</Text>
+                  <Text style={[styles.storeMain, { writingDirection }]}>{t.download.googlePlay}</Text>
+                </View>
+                <View style={styles.arrowCircle}>
+                  <ArrowUpRight size={13} color={Colors.primary} strokeWidth={2.5} />
                 </View>
               </View>
             </Pressable>
-          </Animated.View>
+          </View>
         </View>
-      </View>
+      </Animated.View>
 
       <View style={styles.footer}>
-        <View style={styles.footerDivider} />
-        <View style={[styles.footerContent, { flexDirection }]}>
-          <Text style={styles.footerText}>{t.download.madeWith}</Text>
-          <Heart size={13} color="#EC4899" fill="#EC4899" />
-          <Text style={styles.footerText}>{t.download.forAfrica}</Text>
+        <View style={styles.footerLine} />
+        <View style={[styles.footerRow, { flexDirection }]}>
+          <Text style={styles.footerTxt}>{t.download.madeWith}</Text>
+          <Heart size={13} color="#E11D48" fill="#E11D48" />
+          <Text style={styles.footerTxt}>{t.download.forAfrica}</Text>
         </View>
         <Text style={[styles.copyright, { textAlign: 'center' as const, writingDirection }]}>
           {t.download.copyright}
@@ -113,79 +136,94 @@ export default function DownloadSection() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 48,
-    paddingBottom: 44,
+    paddingTop: 40,
+    paddingBottom: 48,
     backgroundColor: Colors.background,
     overflow: 'hidden' as const,
-    position: 'relative' as const,
-  },
-  glowOrb1: {
-    position: 'absolute' as const,
-    top: -40,
-    right: -60,
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: 'rgba(232,105,46,0.06)',
-  },
-  glowOrb2: {
-    position: 'absolute' as const,
-    bottom: 40,
-    left: -80,
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    backgroundColor: 'rgba(27,158,140,0.05)',
   },
   ctaCard: {
     marginHorizontal: 16,
     borderRadius: 28,
     overflow: 'hidden' as const,
     position: 'relative' as const,
+    shadowColor: '#EA580C',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.2,
+    shadowRadius: 32,
+    elevation: 12,
   },
-  ctaCardPattern1: {
+  shimmerOrb: {
+    position: 'absolute' as const,
+    top: -40,
+    right: -20,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: '#FFFFFF',
+  },
+  patternCircle1: {
     position: 'absolute' as const,
     top: -30,
     right: -30,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  ctaCardPattern2: {
+  patternCircle2: {
     position: 'absolute' as const,
     bottom: -20,
     left: -20,
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
-  ctaContent: {
-    paddingVertical: 44,
+  patternCircle3: {
+    position: 'absolute' as const,
+    top: '40%',
+    left: -40,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+  },
+  ctaInner: {
+    paddingVertical: 48,
     paddingHorizontal: 24,
     alignItems: 'center' as const,
   },
+  sparkleWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginBottom: 20,
+  },
   heading: {
-    fontSize: 34,
+    fontSize: 32,
     fontWeight: '900' as const,
     color: '#FFFFFF',
     textAlign: 'center' as const,
-    lineHeight: 40,
-    letterSpacing: -1,
+    lineHeight: 38,
+    letterSpacing: -0.8,
   },
   headingAccent: {
-    color: 'rgba(255,255,255,0.85)',
+    color: 'rgba(255,255,255,0.8)',
   },
   subtext: {
     fontSize: 15,
-    color: 'rgba(255,255,255,0.75)',
+    color: 'rgba(255,255,255,0.7)',
     textAlign: 'center' as const,
     lineHeight: 23,
     marginTop: 14,
     maxWidth: 320,
   },
-  buttonsWrap: {
+  buttonsCol: {
     marginTop: 32,
     gap: 12,
     width: '100%',
@@ -195,61 +233,64 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
     overflow: 'hidden' as const,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
   },
-  storeBtnInner: {
+  storeBtnRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    paddingVertical: 15,
-    paddingHorizontal: 22,
-    gap: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    gap: 12,
   },
-  btnPressed: {
+  btnPress: {
     opacity: 0.9,
     transform: [{ scale: 0.97 }],
   },
-  storeBtnSub: {
+  storeIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.04)',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  storeSub: {
     fontSize: 10,
     color: Colors.textMuted,
     fontWeight: '600' as const,
     letterSpacing: 0.3,
   },
-  storeBtnMain: {
+  storeMain: {
     fontSize: 17,
     fontWeight: '800' as const,
     color: Colors.text,
     letterSpacing: -0.3,
   },
-  btnArrow: {
+  arrowCircle: {
     marginLeft: 'auto' as const,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(232,105,46,0.08)',
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    backgroundColor: Colors.primaryGlow,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
   footer: {
-    marginTop: 48,
+    marginTop: 52,
     paddingHorizontal: 24,
     alignItems: 'center' as const,
   },
-  footerDivider: {
+  footerLine: {
     height: 1,
-    width: '80%',
-    backgroundColor: 'rgba(28,25,23,0.06)',
+    width: '70%',
+    backgroundColor: 'rgba(0,0,0,0.06)',
     marginBottom: 24,
   },
-  footerContent: {
+  footerRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     gap: 6,
   },
-  footerText: {
+  footerTxt: {
     fontSize: 14,
     color: Colors.textSecondary,
     fontWeight: '500' as const,

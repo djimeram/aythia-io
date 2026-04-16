@@ -4,31 +4,37 @@ import { Shield, Zap, MapPin, CreditCard, Star } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const ACCENT_COLORS = ['#E8692E', '#1B9E8C', '#6366F1', '#F59E0B', '#EC4899'] as const;
+const FEATURE_THEMES = [
+  { bg: '#FFF7ED', iconBg: '#FFEDD5', border: '#FED7AA', color: '#EA580C' },
+  { bg: '#F0FDFA', iconBg: '#CCFBF1', border: '#99F6E4', color: '#0D9488' },
+  { bg: '#EEF2FF', iconBg: '#E0E7FF', border: '#C7D2FE', color: '#6366F1' },
+  { bg: '#FFFBEB', iconBg: '#FEF3C7', border: '#FDE68A', color: '#D97706' },
+  { bg: '#FFF1F2', iconBg: '#FFE4E6', border: '#FECDD3', color: '#E11D48' },
+] as const;
 
 export default function FeaturesSection() {
   const { width } = useWindowDimensions();
   const { t, isRTL, textAlign, writingDirection, flexDirection, alignSelf } = useLanguage();
   const anims = useRef([0, 1, 2, 3, 4].map(() => new Animated.Value(0))).current;
   const headerFade = useRef(new Animated.Value(0)).current;
-  const headerSlide = useRef(new Animated.Value(20)).current;
+  const headerSlide = useRef(new Animated.Value(24)).current;
 
   const features = useMemo(() => [
-    { icon: Shield, title: t.features.safetyTitle, desc: t.features.safetyDesc, color: ACCENT_COLORS[0] },
-    { icon: Zap, title: t.features.matchingTitle, desc: t.features.matchingDesc, color: ACCENT_COLORS[1] },
-    { icon: MapPin, title: t.features.trackingTitle, desc: t.features.trackingDesc, color: ACCENT_COLORS[2] },
-    { icon: CreditCard, title: t.features.paymentTitle, desc: t.features.paymentDesc, color: ACCENT_COLORS[3] },
-    { icon: Star, title: t.features.ratedTitle, desc: t.features.ratedDesc, color: ACCENT_COLORS[4] },
+    { icon: Shield, title: t.features.safetyTitle, desc: t.features.safetyDesc, theme: FEATURE_THEMES[0] },
+    { icon: Zap, title: t.features.matchingTitle, desc: t.features.matchingDesc, theme: FEATURE_THEMES[1] },
+    { icon: MapPin, title: t.features.trackingTitle, desc: t.features.trackingDesc, theme: FEATURE_THEMES[2] },
+    { icon: CreditCard, title: t.features.paymentTitle, desc: t.features.paymentDesc, theme: FEATURE_THEMES[3] },
+    { icon: Star, title: t.features.ratedTitle, desc: t.features.ratedDesc, theme: FEATURE_THEMES[4] },
   ], [t]);
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(headerFade, { toValue: 1, duration: 600, useNativeDriver: true }),
-      Animated.timing(headerSlide, { toValue: 0, duration: 600, useNativeDriver: true }),
+      Animated.spring(headerSlide, { toValue: 0, tension: 40, friction: 9, useNativeDriver: true }),
     ]).start();
 
     Animated.stagger(
-      100,
+      90,
       anims.map(a =>
         Animated.spring(a, { toValue: 1, tension: 50, friction: 8, useNativeDriver: true })
       )
@@ -36,15 +42,19 @@ export default function FeaturesSection() {
   }, [anims, headerFade, headerSlide]);
 
   const isWide = width > 500;
-  const cardWidth = isWide ? (width - 72) / 2 : width - 48;
+  const cardW = isWide ? (width - 72) / 2 : width - 48;
 
   return (
     <View style={styles.container}>
-      <View style={styles.decorBar} />
-
-      <Animated.View style={[styles.header, isRTL && { alignItems: 'flex-end' as const }, { opacity: headerFade, transform: [{ translateY: headerSlide }] }]}>
-        <View style={[styles.eyebrowWrap, { alignSelf }]}>
-          <View style={styles.eyebrowLine} />
+      <Animated.View
+        style={[
+          styles.header,
+          isRTL && { alignItems: 'flex-end' as const },
+          { opacity: headerFade, transform: [{ translateY: headerSlide }] },
+        ]}
+      >
+        <View style={[styles.eyebrowRow, { alignSelf, flexDirection }]}>
+          <View style={styles.eyebrowDot} />
           <Text style={[styles.eyebrow, { writingDirection }]}>{t.features.eyebrow}</Text>
         </View>
         <Text style={[styles.heading, { textAlign, writingDirection }]}>{t.features.heading}</Text>
@@ -54,30 +64,43 @@ export default function FeaturesSection() {
       <View style={[styles.grid, isWide && styles.gridWide]}>
         {features.map((feat, idx) => {
           const Icon = feat.icon;
-          const bgTint = feat.color + '0A';
-          const iconBg = feat.color + '12';
+          const th = feat.theme;
           return (
             <Animated.View
               key={idx}
               style={[
                 styles.card,
                 {
-                  width: cardWidth,
+                  width: cardW,
+                  backgroundColor: th.bg,
+                  borderColor: th.border,
                   opacity: anims[idx],
-                  transform: [{
-                    translateY: anims[idx].interpolate({ inputRange: [0, 1], outputRange: [40, 0] }),
-                  }],
-                  backgroundColor: bgTint,
+                  transform: [
+                    {
+                      translateY: anims[idx].interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [36, 0],
+                      }),
+                    },
+                    {
+                      scale: anims[idx].interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.95, 1],
+                      }),
+                    },
+                  ],
                 },
                 isRTL && { alignItems: 'flex-end' as const },
               ]}
             >
-              <View style={[styles.iconWrap, { backgroundColor: iconBg, alignSelf }]}>
-                <Icon size={22} color={feat.color} strokeWidth={2.2} />
+              <View style={[styles.iconCircle, { backgroundColor: th.iconBg, alignSelf }]}>
+                <Icon size={22} color={th.color} strokeWidth={2.2} />
               </View>
-              <Text style={[styles.cardTitle, { textAlign, writingDirection }]}>{feat.title}</Text>
+              <Text style={[styles.cardTitle, { textAlign, writingDirection, color: th.color }]}>
+                {feat.title}
+              </Text>
               <Text style={[styles.cardDesc, { textAlign, writingDirection }]}>{feat.desc}</Text>
-              <View style={[styles.cardAccent, { backgroundColor: feat.color }]} />
+              <View style={[styles.cardStripe, { backgroundColor: th.color }]} />
             </Animated.View>
           );
         })}
@@ -91,30 +114,21 @@ const styles = StyleSheet.create({
     paddingVertical: 72,
     paddingHorizontal: 24,
     backgroundColor: Colors.background,
-    position: 'relative' as const,
-  },
-  decorBar: {
-    position: 'absolute' as const,
-    top: 0,
-    left: 24,
-    right: 24,
-    height: 1,
-    backgroundColor: 'rgba(28,25,23,0.06)',
   },
   header: {
-    marginBottom: 36,
+    marginBottom: 40,
   },
-  eyebrowWrap: {
+  eyebrowRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    gap: 10,
+    gap: 8,
     marginBottom: 14,
   },
-  eyebrowLine: {
-    width: 24,
-    height: 2,
+  eyebrowDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: Colors.primary,
-    borderRadius: 1,
   },
   eyebrow: {
     fontSize: 11,
@@ -123,10 +137,10 @@ const styles = StyleSheet.create({
     letterSpacing: 2.5,
   },
   heading: {
-    fontSize: 38,
+    fontSize: 36,
     fontWeight: '900' as const,
     color: Colors.text,
-    lineHeight: 44,
+    lineHeight: 42,
     letterSpacing: -1.2,
   },
   subheading: {
@@ -134,7 +148,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     lineHeight: 23,
     marginTop: 12,
-    maxWidth: 320,
+    maxWidth: 340,
   },
   grid: {
     gap: 14,
@@ -144,41 +158,39 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap' as const,
   },
   card: {
-    borderRadius: 22,
-    padding: 24,
+    borderRadius: 20,
+    padding: 22,
     borderWidth: 1,
-    borderColor: 'rgba(28,25,23,0.04)',
     overflow: 'hidden' as const,
     position: 'relative' as const,
   },
-  iconWrap: {
-    width: 48,
-    height: 48,
+  iconCircle: {
+    width: 50,
+    height: 50,
     borderRadius: 16,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '800' as const,
-    color: Colors.text,
     marginBottom: 6,
-    letterSpacing: -0.3,
+    letterSpacing: -0.2,
   },
   cardDesc: {
     fontSize: 14,
     color: Colors.textSecondary,
     lineHeight: 21,
   },
-  cardAccent: {
+  cardStripe: {
     position: 'absolute' as const,
-    bottom: 0,
-    left: 24,
-    right: 24,
-    height: 3,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
-    opacity: 0.4,
+    top: 0,
+    left: 0,
+    width: 4,
+    height: '100%',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+    opacity: 0.5,
   },
 });
