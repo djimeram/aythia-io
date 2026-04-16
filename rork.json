@@ -2,7 +2,7 @@
   "$schema": "https://rork.com/schema/rork.json",
   "apps": [
     {
-      "name": "Aythia Showcase",
+      "name": "Aythia-io",
       "path": "expo",
       "framework": "react-native"
     }
