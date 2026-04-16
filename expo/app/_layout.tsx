@@ -15,6 +15,7 @@ function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: BG }, animation: Platform.OS === 'web' ? 'none' : 'fade' }}>
       <Stack.Screen name="index" />
+      <Stack.Screen name="privacy" />
       <Stack.Screen name="+not-found" />
     </Stack>
   );
