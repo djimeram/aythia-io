@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Apple, Play, Heart, ArrowUpRight, Sparkles } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { Link } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -130,13 +130,14 @@ export default function DownloadSection() {
         <Text style={[styles.copyright, { textAlign: 'center' as const, writingDirection }]}>
           {t.download.copyright}
         </Text>
-        <Pressable
-          onPress={() => router.push('/privacy')}
-          style={({ pressed }) => [styles.privacyLink, pressed && styles.privacyPressed]}
-          testID="privacy-link"
-        >
-          <Text style={[styles.privacyTxt, { writingDirection }]}>{t.download.privacyPolicy}</Text>
-        </Pressable>
+        <Link href="/privacy" asChild>
+          <Pressable
+            style={({ pressed }) => [styles.privacyLink, pressed && styles.privacyPressed]}
+            testID="privacy-link"
+          >
+            <Text style={[styles.privacyTxt, { writingDirection }]}>{t.download.privacyPolicy}</Text>
+          </Pressable>
+        </Link>
       </View>
     </Animated.View>
   );
