@@ -304,14 +304,6 @@ const styles = StyleSheet.create({
   },
   titleAccent: {
     color: '#A78BFA',
-    ...(Platform.OS === 'web'
-      ? ({
-          backgroundImage: 'linear-gradient(120deg, #A78BFA 0%, #22D3EE 50%, #EC4899 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-        } as object)
-      : {}),
   },
   subtitle: {
     fontSize: 16,
