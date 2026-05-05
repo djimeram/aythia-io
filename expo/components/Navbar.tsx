@@ -1,10 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, Animated, Platform } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Sparkles } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Language } from '@/constants/translations';
+
+const LOGO_URI = 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/guopk99hmxc86omic58e9.png';
 
 const LANGUAGES: { code: Language; label: string }[] = [
   { code: 'en', label: 'EN' },
@@ -22,6 +24,7 @@ export default function Navbar({ scrollY }: NavbarProps) {
   const fadeIn = useRef(new Animated.Value(0)).current;
   const slideDown = useRef(new Animated.Value(-20)).current;
   const logoSpin = useRef(new Animated.Value(0)).current;
+  const haloPulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -29,9 +32,15 @@ export default function Navbar({ scrollY }: NavbarProps) {
       Animated.spring(slideDown, { toValue: 0, tension: 50, friction: 9, delay: 200, useNativeDriver: true }),
     ]).start();
     Animated.loop(
-      Animated.timing(logoSpin, { toValue: 1, duration: 14000, useNativeDriver: true })
+      Animated.timing(logoSpin, { toValue: 1, duration: 18000, useNativeDriver: true })
     ).start();
-  }, [fadeIn, slideDown, logoSpin]);
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(haloPulse, { toValue: 1, duration: 2200, useNativeDriver: true }),
+        Animated.timing(haloPulse, { toValue: 0, duration: 2200, useNativeDriver: true }),
+      ])
+    ).start();
+  }, [fadeIn, slideDown, logoSpin, haloPulse]);
 
   const compact = scrollY.interpolate({
     inputRange: [0, 140],
@@ -40,6 +49,8 @@ export default function Navbar({ scrollY }: NavbarProps) {
   });
 
   const spin = logoSpin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
+  const haloOpacity = haloPulse.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1] });
+  const haloScale = haloPulse.interpolate({ inputRange: [0, 1], outputRange: [0.95, 1.08] });
 
   return (
     <Animated.View
@@ -61,19 +72,51 @@ export default function Navbar({ scrollY }: NavbarProps) {
 
         <View style={[styles.brand, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
           <View style={styles.logoOuter}>
-            <Animated.View style={[styles.logoRing, { transform: [{ rotate: spin }] }]}>
+            <Animated.View
+              style={[
+                styles.logoHalo,
+                { opacity: haloOpacity, transform: [{ scale: haloScale }] },
+              ]}
+              pointerEvents="none"
+            >
               <LinearGradient
-                colors={['#8B5CF6', '#22D3EE', '#EC4899', '#8B5CF6']}
+                colors={[ 'rgba(250,204,21,0.55)', 'rgba(34,197,94,0.45)', 'rgba(250,204,21,0.0)']}
+                start={{ x: 0.2, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFillObject}
+              />
+            </Animated.View>
+            <Animated.View
+              style={[styles.logoRing, { transform: [{ rotate: spin }] }]}
+              pointerEvents="none"
+            >
+              <LinearGradient
+                colors={['#FACC15', '#22C55E', '#FACC15', '#16A34A', '#FACC15']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFillObject}
               />
             </Animated.View>
             <View style={styles.logoInner}>
-              <Sparkles size={13} color="#FFF" strokeWidth={2.5} />
+              <Image
+                source={{ uri: LOGO_URI }}
+                style={styles.logoImage}
+                contentFit="contain"
+                transition={400}
+              />
             </View>
           </View>
-          <Text style={styles.logoText}>Aythia</Text>
+          <View>
+            <Text style={styles.logoText}>Aythia</Text>
+            <View style={styles.logoUnderline}>
+              <LinearGradient
+                colors={['rgba(250,204,21,0.9)', 'rgba(34,197,94,0.0)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFillObject}
+              />
+            </View>
+          </View>
         </View>
 
         <View style={[styles.langRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
@@ -154,26 +197,50 @@ const styles = StyleSheet.create({
     paddingLeft: 4,
   },
   logoOuter: {
-    width: 30,
-    height: 30,
-    borderRadius: 10,
-    overflow: 'hidden' as const,
+    width: 36,
+    height: 36,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
+  logoHalo: {
+    position: 'absolute' as const,
+    top: -8,
+    left: -8,
+    right: -8,
+    bottom: -8,
+    borderRadius: 999,
+    overflow: 'hidden' as const,
+  },
   logoRing: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 12,
+    overflow: 'hidden' as const,
   },
   logoInner: {
     position: 'absolute' as const,
-    top: 2,
-    left: 2,
-    right: 2,
-    bottom: 2,
-    borderRadius: 8,
-    backgroundColor: '#06060F',
+    top: 1.5,
+    left: 1.5,
+    right: 1.5,
+    bottom: 1.5,
+    borderRadius: 11,
+    backgroundColor: 'rgba(6,8,18,0.92)',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
+    overflow: 'hidden' as const,
+  },
+  logoImage: {
+    width: '88%',
+    height: '88%',
+  },
+  logoUnderline: {
+    height: 2,
+    marginTop: 2,
+    borderRadius: 2,
+    overflow: 'hidden' as const,
   },
   logoText: {
     fontSize: 17,
