@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     ...(Platform.OS === 'web'
       ? ({
-          background:
+          backgroundImage:
             'radial-gradient(ellipse at center, transparent 30%, rgba(2,2,8,0.7) 100%)',
         } as object)
       : { backgroundColor: 'rgba(2,2,8,0.15)' }),
