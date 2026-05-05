@@ -39,7 +39,7 @@ export default function NotFoundScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={notFoundStyles.container} testID="not-found-screen">
         <LinearGradient
-          colors={['rgba(232,168,56,0.06)', 'transparent']}
+          colors={['rgba(139,92,246,0.18)', 'rgba(34,211,238,0.08)', 'transparent']}
           style={notFoundStyles.ambientGlow}
         />
         <Animated.View style={[notFoundStyles.contentWrap, { opacity: fadeAnim }]}>
@@ -50,7 +50,7 @@ export default function NotFoundScreen() {
             ]}
           >
             <View style={notFoundStyles.iconInner}>
-              <MapPin size={32} color={'#E8A838'} strokeWidth={1.8} />
+              <MapPin size={32} color={'#A78BFA'} strokeWidth={1.8} />
             </View>
           </Animated.View>
 
@@ -80,7 +80,7 @@ export default function NotFoundScreen() {
 const notFoundStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#080706',
+    backgroundColor: '#06060F',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 32,
@@ -100,7 +100,7 @@ const notFoundStyles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: 'rgba(232,168,56,0.07)',
+    backgroundColor: 'rgba(139,92,246,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -109,22 +109,22 @@ const notFoundStyles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: 'rgba(232,168,56,0.12)',
+    backgroundColor: 'rgba(139,92,246,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(232,168,56,0.2)',
+    borderColor: 'rgba(139,92,246,0.3)',
   },
   title: {
     fontSize: 28,
     fontWeight: '800' as const,
-    color: '#FAF8F0',
+    color: '#FFFFFF',
     textAlign: 'center' as const,
     letterSpacing: -0.8,
   },
   description: {
     fontSize: 15,
-    color: '#8A857E',
+    color: 'rgba(255,255,255,0.5)',
     textAlign: 'center' as const,
     lineHeight: 23,
     maxWidth: 300,
@@ -134,10 +134,10 @@ const notFoundStyles = StyleSheet.create({
     alignItems: 'center' as const,
     gap: 8,
     marginTop: 22,
-    backgroundColor: '#E8A838',
+    backgroundColor: '#A78BFA',
     paddingVertical: 16,
     paddingHorizontal: 32,
-    borderRadius: 18,
+    borderRadius: 999,
   },
   backButtonPressed: {
     opacity: 0.8,
@@ -146,7 +146,7 @@ const notFoundStyles = StyleSheet.create({
   backButtonText: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: '#080706',
+    color: '#06060F',
     letterSpacing: 0.2,
   },
 });

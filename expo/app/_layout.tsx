@@ -9,7 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 
 SplashScreen.preventAutoHideAsync();
 
-const BG = '#FAFAF9';
+const BG = '#06060F';
 
 function RootLayoutNav() {
   return (
@@ -42,7 +42,7 @@ export default function RootLayout() {
       <LanguageProvider>
         <GestureHandlerRootView style={s.b}>
           <Animated.View style={[s.b, { opacity: fade }]}>
-            <StatusBar style="dark" />
+            <StatusBar style="light" />
             <RootLayoutNav />
           </Animated.View>
         </GestureHandlerRootView>

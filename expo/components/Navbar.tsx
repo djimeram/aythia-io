@@ -1,14 +1,15 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, Animated, Platform } from 'react-native';
-import { Globe } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Sparkles } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Language } from '@/constants/translations';
 
-const LANGUAGES: { code: Language; label: string; flag: string }[] = [
-  { code: 'en', label: 'EN', flag: '🇬🇧' },
-  { code: 'fr', label: 'FR', flag: '🇫🇷' },
-  { code: 'ar', label: 'عر', flag: '🇸🇦' },
+const LANGUAGES: { code: Language; label: string }[] = [
+  { code: 'en', label: 'EN' },
+  { code: 'fr', label: 'FR' },
+  { code: 'ar', label: 'ع' },
 ];
 
 interface NavbarProps {
@@ -16,51 +17,87 @@ interface NavbarProps {
   onNavigate: (section: string) => void;
 }
 
-export default function Navbar({ scrollY, onNavigate }: NavbarProps) {
-  const { t, language, setLanguage, isRTL, flexDirection } = useLanguage();
+export default function Navbar({ scrollY }: NavbarProps) {
+  const { language, setLanguage, isRTL } = useLanguage();
   const fadeIn = useRef(new Animated.Value(0)).current;
+  const slideDown = useRef(new Animated.Value(-20)).current;
+  const logoSpin = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.timing(fadeIn, { toValue: 1, duration: 600, delay: 300, useNativeDriver: true }).start();
-  }, [fadeIn]);
+    Animated.parallel([
+      Animated.timing(fadeIn, { toValue: 1, duration: 800, delay: 200, useNativeDriver: true }),
+      Animated.spring(slideDown, { toValue: 0, tension: 50, friction: 9, delay: 200, useNativeDriver: true }),
+    ]).start();
+    Animated.loop(
+      Animated.timing(logoSpin, { toValue: 1, duration: 14000, useNativeDriver: true })
+    ).start();
+  }, [fadeIn, slideDown, logoSpin]);
 
-  const bgOpacity = scrollY.interpolate({
-    inputRange: [0, 120],
-    outputRange: [0, 1],
+  const compact = scrollY.interpolate({
+    inputRange: [0, 140],
+    outputRange: [1, 0.92],
     extrapolate: 'clamp',
   });
 
-  const borderOpacity = scrollY.interpolate({
-    inputRange: [0, 120],
-    outputRange: [0, 1],
-    extrapolate: 'clamp',
-  });
+  const spin = logoSpin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
 
   return (
-    <Animated.View style={[styles.wrapper, { opacity: fadeIn }]}>
-      <Animated.View style={[styles.bgFill, { opacity: bgOpacity }]} />
-      <Animated.View style={[styles.borderFill, { opacity: borderOpacity }]} />
+    <Animated.View
+      style={[
+        styles.wrapper,
+        { opacity: fadeIn, transform: [{ translateY: slideDown }, { scale: compact }] },
+      ]}
+    >
+      <View style={[styles.pill, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+        <View style={styles.pillBg} />
+        <LinearGradient
+          colors={['rgba(139,92,246,0.15)', 'rgba(34,211,238,0.1)', 'rgba(236,72,153,0.12)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
+          pointerEvents="none"
+        />
+        <View style={styles.pillBorder} pointerEvents="none" />
 
-      <View style={[styles.inner, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
         <View style={[styles.brand, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          <View style={styles.logoMark}>
-            <Text style={styles.logoLetter}>A</Text>
+          <View style={styles.logoOuter}>
+            <Animated.View style={[styles.logoRing, { transform: [{ rotate: spin }] }]}>
+              <LinearGradient
+                colors={['#8B5CF6', '#22D3EE', '#EC4899', '#8B5CF6']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFillObject}
+              />
+            </Animated.View>
+            <View style={styles.logoInner}>
+              <Sparkles size={13} color="#FFF" strokeWidth={2.5} />
+            </View>
           </View>
           <Text style={styles.logoText}>Aythia</Text>
         </View>
 
         <View style={[styles.langRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-          <Globe size={13} color={Colors.textMuted} strokeWidth={2} />
           {LANGUAGES.map((lang) => {
             const active = language === lang.code;
             return (
               <Pressable
                 key={lang.code}
                 onPress={() => setLanguage(lang.code)}
-                style={[styles.langPill, active && styles.langPillActive]}
+                style={({ pressed }) => [
+                  styles.langPill,
+                  active && styles.langPillActive,
+                  pressed && styles.langPillPressed,
+                ]}
                 testID={`lang-${lang.code}`}
               >
-                <Text style={styles.langFlag}>{lang.flag}</Text>
+                {active && (
+                  <LinearGradient
+                    colors={['#8B5CF6', '#22D3EE']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFillObject}
+                  />
+                )}
                 <Text style={[styles.langLabel, active && styles.langLabelActive]}>{lang.label}</Text>
               </Pressable>
             );
@@ -74,87 +111,111 @@ export default function Navbar({ scrollY, onNavigate }: NavbarProps) {
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute' as const,
-    top: 0,
+    top: Platform.OS === 'web' ? 16 : 52,
     left: 0,
     right: 0,
     zIndex: 100,
-    paddingTop: Platform.OS === 'web' ? 12 : 52,
+    alignItems: 'center' as const,
     paddingHorizontal: 16,
-    paddingBottom: 10,
   },
-  bgFill: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255,255,255,0.88)',
-    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px)' } : {}),
-  },
-  borderFill: {
-    position: 'absolute' as const,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: 'rgba(0,0,0,0.06)',
-  },
-  inner: {
+  pill: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     justifyContent: 'space-between' as const,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    minWidth: 280,
+    maxWidth: 520,
+    width: '100%',
+    overflow: 'hidden' as const,
+    gap: 14,
+  },
+  pillBg: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(12,12,28,0.65)',
+    ...(Platform.OS === 'web'
+      ? ({
+          backdropFilter: 'blur(24px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        } as object)
+      : {}),
+  },
+  pillBorder: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
   },
   brand: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     gap: 10,
+    paddingLeft: 4,
   },
-  logoMark: {
-    width: 32,
-    height: 32,
+  logoOuter: {
+    width: 30,
+    height: 30,
     borderRadius: 10,
-    backgroundColor: Colors.primary,
+    overflow: 'hidden' as const,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
-  logoLetter: {
+  logoRing: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  logoInner: {
+    position: 'absolute' as const,
+    top: 2,
+    left: 2,
+    right: 2,
+    bottom: 2,
+    borderRadius: 8,
+    backgroundColor: '#06060F',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  logoText: {
     fontSize: 17,
     fontWeight: '800' as const,
     color: '#FFFFFF',
-    marginTop: -1,
-  },
-  logoText: {
-    fontSize: 20,
-    fontWeight: '800' as const,
-    color: Colors.text,
-    letterSpacing: -0.5,
+    letterSpacing: -0.4,
   },
   langRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     gap: 4,
-    backgroundColor: 'rgba(0,0,0,0.03)',
-    borderRadius: 24,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 999,
+    padding: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   langPill: {
-    flexDirection: 'row' as const,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    overflow: 'hidden' as const,
+    minWidth: 38,
     alignItems: 'center' as const,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 16,
-    gap: 4,
   },
   langPillActive: {
-    backgroundColor: Colors.primaryGlow,
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 12,
+    elevation: 6,
   },
-  langFlag: {
-    fontSize: 12,
+  langPillPressed: {
+    opacity: 0.7,
   },
   langLabel: {
     fontSize: 11,
     fontWeight: '700' as const,
-    color: Colors.textMuted,
-    letterSpacing: 0.3,
+    color: 'rgba(255,255,255,0.55)',
+    letterSpacing: 0.6,
   },
   langLabelActive: {
-    color: Colors.primary,
+    color: '#FFFFFF',
   },
 });
